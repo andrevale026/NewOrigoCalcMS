@@ -1,0 +1,4182 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <!-- =========================================================
+         CONFIGURAÇÕES BÁSICAS
+         ========================================================= -->
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="Simulador de economia e eficiência energética."
+    >
+
+    <meta
+        name="theme-color"
+        content="#05050a"
+    >
+
+    <title>Simulador de Economia | Sistema 4K</title>
+
+
+    <!-- =========================================================
+         FONTES
+         ========================================================= -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
+
+    <!-- =========================================================
+         BIBLIOTECA PARA GERAÇÃO DE PDF
+         ========================================================= -->
+    <script
+        defer
+        src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
+    ></script>
+
+
+    <style>
+        /* =========================================================
+           1. VARIÁVEIS GLOBAIS
+           ========================================================= */
+
+        :root {
+            /* Fundos */
+            --bg-dark: #05050a;
+            --bg-secondary: #0b0b12;
+
+            --bg-gradient:
+                radial-gradient(
+                    circle at top center,
+                    #1a0b2e 0%,
+                    #05050a 55%,
+                    #020204 100%
+                );
+
+            /* Cores neon */
+            --neon-cyan: #00f3ff;
+            --neon-purple: #bc13fe;
+            --neon-green: #00ff9d;
+            --neon-red: #ff0055;
+            --neon-orange: #ff9900;
+
+            /* Textos */
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --text-white: #ffffff;
+
+            /* Glassmorphism */
+            --glass-bg: rgba(20, 20, 30, 0.56);
+            --glass-bg-strong: rgba(12, 12, 20, 0.88);
+
+            --glass-border:
+                rgba(255, 255, 255, 0.08);
+
+            /* Bordas */
+            --border-cyan:
+                rgba(0, 243, 255, 0.22);
+
+            /* Sombras */
+            --shadow-card:
+                0 16px 45px rgba(0, 0, 0, 0.42);
+
+            /* Medidas */
+            --container-width: 1200px;
+            --radius-large: 18px;
+            --radius-medium: 10px;
+            --radius-small: 8px;
+
+            /* Transições */
+            --transition-fast: 180ms ease;
+            --transition-normal: 300ms ease;
+        }
+
+
+        /* =========================================================
+           2. RESET
+           ========================================================= */
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        html {
+            color-scheme: dark;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+
+            display: flex;
+            flex-direction: column;
+
+            overflow-x: hidden;
+
+            font-family: "Inter", sans-serif;
+            font-size: 16px;
+            line-height: 1.5;
+
+            color: var(--text-main);
+
+            background-color: var(--bg-dark);
+            background-image: var(--bg-gradient);
+            background-attachment: fixed;
+
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        button,
+        input,
+        select {
+            font: inherit;
+        }
+
+        button {
+            border: 0;
+        }
+
+        [hidden] {
+            display: none !important;
+        }
+
+
+        /* =========================================================
+           3. FUNDO DECORATIVO
+           ========================================================= */
+
+        body::before {
+            content: "";
+
+            position: fixed;
+            inset: 0;
+
+            z-index: -1;
+
+            pointer-events: none;
+
+            background-image:
+                linear-gradient(
+                    rgba(0, 243, 255, 0.025) 1px,
+                    transparent 1px
+                ),
+                linear-gradient(
+                    90deg,
+                    rgba(0, 243, 255, 0.025) 1px,
+                    transparent 1px
+                );
+
+            background-size: 40px 40px;
+        }
+
+
+        /* =========================================================
+           4. CABEÇALHO
+           ========================================================= */
+
+        .app-header {
+            width: 100%;
+
+            padding:
+                42px 20px
+                20px;
+
+            text-align: center;
+        }
+
+        .app-title {
+            margin: 0;
+
+            font-family: "Rajdhani", sans-serif;
+
+            font-size:
+                clamp(2rem, 5vw, 3.4rem);
+
+            font-weight: 700;
+
+            line-height: 1;
+
+            letter-spacing: 3px;
+
+            text-transform: uppercase;
+
+            color: var(--text-white);
+        }
+
+        .app-title__highlight {
+            display: block;
+
+            margin-top: 10px;
+
+            color: var(--neon-orange);
+
+            text-shadow:
+                0 0 5px rgba(255, 153, 0, 0.90),
+                0 0 12px rgba(255, 153, 0, 0.55),
+                0 0 25px rgba(255, 153, 0, 0.25);
+        }
+
+        .app-subtitle {
+            margin:
+                14px 0 0;
+
+            font-family: "Rajdhani", sans-serif;
+
+            font-size:
+                clamp(0.9rem, 2vw, 1.1rem);
+
+            letter-spacing: 2px;
+
+            text-transform: uppercase;
+
+            color: var(--text-muted);
+        }
+
+
+        /* =========================================================
+           5. CONTAINER PRINCIPAL
+           ========================================================= */
+
+        .app-main {
+            width: 100%;
+            max-width: var(--container-width);
+
+            margin: 0 auto;
+
+            padding: 20px;
+
+            flex: 1;
+        }
+
+        .app-grid {
+            display: grid;
+
+            grid-template-columns:
+                minmax(0, 1fr);
+
+            gap: 28px;
+
+            align-items: start;
+        }
+
+        .app-grid.has-results {
+            grid-template-columns:
+                minmax(340px, 0.85fr)
+                minmax(0, 1.15fr);
+        }
+
+
+        /* =========================================================
+           6. CARDS
+           ========================================================= */
+
+        .card {
+            position: relative;
+
+            overflow: hidden;
+
+            padding: 28px;
+
+            border:
+                1px solid
+                var(--glass-border);
+
+            border-radius:
+                var(--radius-large);
+
+            background:
+                var(--glass-bg);
+
+            box-shadow:
+                var(--shadow-card);
+
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+        }
+
+        .card::before {
+            content: "";
+
+            position: absolute;
+
+            top: 0;
+            left: 0;
+
+            width: 100%;
+            height: 2px;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    transparent,
+                    var(--neon-cyan),
+                    transparent
+                );
+        }
+
+        .card__title {
+            display: flex;
+            align-items: center;
+
+            gap: 10px;
+
+            margin:
+                0 0 24px;
+
+            font-family:
+                "Rajdhani",
+                sans-serif;
+
+            font-size:
+                clamp(1.4rem, 3vw, 1.8rem);
+
+            font-weight: 700;
+
+            letter-spacing: 1px;
+
+            text-transform: uppercase;
+
+            color:
+                var(--neon-purple);
+
+            text-shadow:
+                0 0 10px
+                rgba(188, 19, 254, 0.3);
+        }
+
+
+        /* =========================================================
+           7. FORMULÁRIO
+           ========================================================= */
+
+        .form-section {
+            margin: 0;
+            padding: 0;
+
+            border: 0;
+        }
+
+        .form-group {
+            margin-top: 20px;
+        }
+
+        .form-label {
+            display: block;
+
+            margin-bottom: 8px;
+
+            font-family:
+                "Rajdhani",
+                sans-serif;
+
+            font-size: 1.05rem;
+            font-weight: 600;
+
+            letter-spacing: 0.7px;
+
+            color:
+                var(--neon-cyan);
+        }
+
+        .form-control {
+            width: 100%;
+
+            padding:
+                14px 15px;
+
+            border:
+                1px solid
+                var(--border-cyan);
+
+            border-radius:
+                var(--radius-medium);
+
+            outline: none;
+
+            background:
+                rgba(0, 0, 0, 0.50);
+
+            color:
+                var(--text-white);
+
+            transition:
+                border-color
+                var(--transition-fast),
+                box-shadow
+                var(--transition-fast),
+                background
+                var(--transition-fast);
+        }
+
+        .form-control:hover {
+            border-color:
+                rgba(0, 243, 255, 0.45);
+        }
+
+        .form-control:focus {
+            border-color:
+                var(--neon-cyan);
+
+            background:
+                rgba(0, 0, 0, 0.78);
+
+            box-shadow:
+                0 0 0 3px
+                rgba(0, 243, 255, 0.07),
+                0 0 16px
+                rgba(0, 243, 255, 0.10);
+        }
+
+        .form-control::placeholder {
+            color:
+                rgba(255, 255, 255, 0.28);
+        }
+
+        select.form-control {
+            cursor: pointer;
+        }
+
+        select.form-control option {
+            color:
+                var(--text-white);
+
+            background:
+                #101019;
+        }
+
+
+        /* =========================================================
+           8. SWITCH DE GD PRÓPRIA
+           ========================================================= */
+
+        .switch-container {
+            display: flex;
+            align-items: center;
+
+            gap: 14px;
+
+            margin-top: 10px;
+        }
+
+        .switch-status {
+            font-family:
+                "Rajdhani",
+                sans-serif;
+
+            font-size: 1.05rem;
+            font-weight: 700;
+        }
+
+        .switch-status--off {
+            color:
+                var(--neon-red);
+        }
+
+        .switch-status--on {
+            color:
+                var(--neon-green);
+        }
+
+        .switch {
+            position: relative;
+
+            display: inline-block;
+
+            width: 60px;
+            height: 30px;
+        }
+
+        .switch input {
+            width: 0;
+            height: 0;
+
+            opacity: 0;
+        }
+
+        .switch__slider {
+            position: absolute;
+
+            inset: 0;
+
+            cursor: pointer;
+
+            border:
+                1px solid
+                rgba(255, 255, 255, 0.20);
+
+            border-radius: 30px;
+
+            background:
+                rgba(255, 255, 255, 0.08);
+
+            transition:
+                var(--transition-normal);
+        }
+
+        .switch__slider::before {
+            content: "";
+
+            position: absolute;
+
+            width: 22px;
+            height: 22px;
+
+            left: 3px;
+            bottom: 3px;
+
+            border-radius: 50%;
+
+            background:
+                #ffffff;
+
+            box-shadow:
+                0 0 10px
+                rgba(255, 255, 255, 0.45);
+
+            transition:
+                var(--transition-normal);
+        }
+
+        .switch input:checked +
+        .switch__slider {
+            border-color:
+                var(--neon-green);
+
+            background:
+                rgba(0, 255, 157, 0.18);
+        }
+
+        .switch input:checked +
+        .switch__slider::before {
+            transform:
+                translateX(30px);
+
+            background:
+                var(--neon-green);
+
+            box-shadow:
+                0 0 15px
+                rgba(0, 255, 157, 0.70);
+        }
+
+        .switch input:focus-visible +
+        .switch__slider {
+            outline:
+                2px solid
+                var(--text-white);
+
+            outline-offset: 3px;
+        }
+
+
+        /* =========================================================
+           9. AVISOS E VALIDAÇÃO
+           ========================================================= */
+
+        .alert {
+            margin-top: 14px;
+
+            padding:
+                12px 14px;
+
+            border-radius:
+                var(--radius-medium);
+
+            font-family:
+                "Rajdhani",
+                sans-serif;
+
+            font-size: 1rem;
+            font-weight: 700;
+
+            text-align: center;
+        }
+
+        .alert--warning {
+            border:
+                1px solid
+                var(--neon-orange);
+
+            color:
+                var(--neon-orange);
+
+            background:
+                rgba(255, 153, 0, 0.09);
+
+            box-shadow:
+                0 0 15px
+                rgba(255, 153, 0, 0.10);
+        }
+
+        .alert--error {
+            border:
+                1px solid
+                var(--neon-red);
+
+            color:
+                #ff6d9e;
+
+            background:
+                rgba(255, 0, 85, 0.09);
+
+            box-shadow:
+                0 0 15px
+                rgba(255, 0, 85, 0.10);
+        }
+
+        .field-error {
+            border-color:
+                var(--neon-red) !important;
+
+            box-shadow:
+                0 0 0 3px
+                rgba(255, 0, 85, 0.07) !important;
+        }
+
+
+        /* =========================================================
+           10. BOTÕES
+           ========================================================= */
+
+        .button {
+            width: 100%;
+
+            padding:
+                16px 20px;
+
+            border:
+                1px solid
+                var(--neon-purple);
+
+            border-radius:
+                var(--radius-medium);
+
+            font-family:
+                "Rajdhani",
+                sans-serif;
+
+            font-size: 1.2rem;
+            font-weight: 700;
+
+            letter-spacing: 1.5px;
+
+            text-transform: uppercase;
+
+            cursor: pointer;
+
+            color:
+                var(--neon-purple);
+
+            background:
+                rgba(188, 19, 254, 0.09);
+
+            transition:
+                background
+                var(--transition-normal),
+                color
+                var(--transition-normal),
+                box-shadow
+                var(--transition-normal),
+                transform
+                var(--transition-fast);
+        }
+
+        .button:hover {
+            color:
+                #ffffff;
+
+            background:
+                var(--neon-purple);
+
+            box-shadow:
+                0 0 28px
+                rgba(188, 19, 254, 0.40);
+        }
+
+        .button:active {
+            transform:
+                translateY(1px);
+        }
+
+        .button:focus-visible {
+            outline:
+                2px solid
+                #ffffff;
+
+            outline-offset: 3px;
+        }
+
+        .button:disabled {
+            cursor:
+                not-allowed;
+
+            opacity: 0.55;
+        }
+
+        .button--primary {
+            margin-top: 28px;
+        }
+
+        .button--pdf {
+            margin-top: 18px;
+
+            border-color:
+                var(--neon-cyan);
+
+            color:
+                var(--neon-cyan);
+
+            background:
+                rgba(0, 243, 255, 0.08);
+        }
+
+        .button--pdf:hover {
+            color:
+                #000000;
+
+            background:
+                var(--neon-cyan);
+
+            box-shadow:
+                0 0 28px
+                rgba(0, 243, 255, 0.35);
+        }
+
+
+        /* =========================================================
+           11. RESULTADOS
+           ========================================================= */
+
+        .results {
+            display: flex;
+            flex-direction: column;
+
+            gap: 20px;
+        }
+
+        .result-card {
+            padding: 24px;
+        }
+
+        .result-card__title {
+            margin:
+                0 0 15px;
+
+            font-family:
+                "Rajdhani",
+                sans-serif;
+
+            font-size: 1.2rem;
+            font-weight: 700;
+
+            letter-spacing: 0.8px;
+
+            text-transform: uppercase;
+        }
+
+        .result-card__title--orange {
+            color:
+                var(--neon-orange);
+        }
+
+        .result-card__title--purple {
+            color:
+                var(--neon-purple);
+        }
+
+        .result-list {
+            margin: 0;
+        }
+
+        .result-row {
+            display: grid;
+
+            grid-template-columns:
+                minmax(0, 1fr)
+                auto;
+
+            gap: 15px;
+
+            padding: 9px 0;
+
+            border-bottom:
+                1px solid
+                rgba(255, 255, 255, 0.06);
+        }
+
+        .result-row:last-child {
+            border-bottom: 0;
+        }
+
+        .result-row dt,
+        .result-row dd {
+            margin: 0;
+        }
+
+        .result-row dd {
+            font-weight: 600;
+
+            text-align: right;
+        }
+
+        .result-total {
+            display: grid;
+
+            grid-template-columns:
+                minmax(0, 1fr)
+                auto;
+
+            gap: 15px;
+
+            margin-top: 14px;
+
+            padding-top: 14px;
+
+            border-top:
+                2px solid
+                rgba(255, 255, 255, 0.10);
+
+            font-family:
+                "Rajdhani",
+                sans-serif;
+
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .result-total--orange {
+            color:
+                var(--neon-orange);
+        }
+
+        .result-total--purple {
+            color:
+                var(--neon-purple);
+        }
+
+
+        /* =========================================================
+           12. ECONOMIA
+           ========================================================= */
+
+        .savings-card {
+            border-color:
+                rgba(0, 255, 157, 0.30);
+
+            text-align: center;
+
+            background:
+                rgba(10, 28, 24, 0.55);
+        }
+
+        .savings-month {
+            margin-bottom: 16px;
+
+            font-family:
+                "Rajdhani",
+                sans-serif;
+
+            font-size:
+                clamp(1.4rem, 3vw, 1.8rem);
+
+            font-weight: 700;
+
+            color:
+                var(--neon-green);
+
+            text-shadow:
+                0 0 12px
+                rgba(0, 255, 157, 0.30);
+        }
+
+        .savings-year {
+            font-family:
+                "Rajdhani",
+                sans-serif;
+
+            font-size:
+                clamp(1.7rem, 4vw, 2.2rem);
+
+            font-weight: 700;
+
+            color:
+                var(--neon-cyan);
+
+            text-shadow:
+                0 0 12px
+                rgba(0, 243, 255, 0.30);
+        }
+
+
+        /* =========================================================
+           13. EXECUTIVO
+           ========================================================= */
+
+        .executive-card {
+            text-align: center;
+
+            border-color:
+                rgba(0, 243, 255, 0.30);
+
+            background:
+                rgba(0, 0, 0, 0.30);
+        }
+
+        .executive-name {
+            margin: 0;
+
+            font-family:
+                "Rajdhani",
+                sans-serif;
+
+            font-size: 1.3rem;
+            font-weight: 700;
+
+            color:
+                var(--neon-cyan);
+        }
+
+        .executive-phone {
+            margin:
+                5px 0 0;
+
+            color:
+                var(--text-muted);
+        }
+
+
+        /* =========================================================
+           14. ASSINATURA DA SIMULAÇÃO
+           ========================================================= */
+
+        .simulation-signature {
+            margin: 0;
+
+            text-align: center;
+
+            font-size: 0.82rem;
+
+            color:
+                var(--text-muted);
+        }
+
+        .simulation-signature strong {
+            color:
+                var(--text-white);
+        }
+
+
+        /* =========================================================
+           15. RODAPÉ
+           ========================================================= */
+
+        .app-footer {
+            width: 100%;
+
+            padding:
+                30px 20px
+                22px;
+
+            text-align: center;
+        }
+
+        .app-footer p {
+            margin: 0;
+
+            font-family:
+                "Rajdhani",
+                sans-serif;
+
+            font-size: 0.9rem;
+            font-weight: 700;
+
+            letter-spacing: 1px;
+
+            color:
+                var(--neon-orange);
+
+            text-shadow:
+                0 0 8px
+                rgba(255, 153, 0, 0.40);
+        }
+
+
+        /* =========================================================
+           16. PDF
+           ========================================================= */
+
+        #pdfContent {
+            display: none;
+        }
+
+
+        /* =========================================================
+           17. RESPONSIVIDADE
+           ========================================================= */
+
+        @media (max-width: 900px) {
+            .app-grid,
+            .app-grid.has-results {
+                grid-template-columns:
+                    minmax(0, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .app-header {
+                padding:
+                    30px 15px
+                    12px;
+            }
+
+            .app-main {
+                padding: 12px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .result-row,
+            .result-total {
+                gap: 8px;
+
+                font-size: 0.9rem;
+            }
+        }
+
+
+        /* =========================================================
+           18. ACESSIBILIDADE
+           ========================================================= */
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                scroll-behavior:
+                    auto !important;
+
+                transition-duration:
+                    0.01ms !important;
+
+                animation-duration:
+                    0.01ms !important;
+
+                animation-iteration-count:
+                    1 !important;
+            }
+        }
+    </style>
+</head>
+
+
+<body>
+
+    <!-- =========================================================
+         CABEÇALHO
+         ========================================================= -->
+
+    <header class="app-header">
+
+        <h1 class="app-title">
+            Simulador de Economia
+
+            <span class="app-title__highlight">
+                Energia | MS
+            </span>
+        </h1>
+
+        <p class="app-subtitle">
+            Análise Computacional de Economia e Eficiência
+        </p>
+
+    </header>
+
+
+    <!-- =========================================================
+         CONTEÚDO PRINCIPAL
+         ========================================================= -->
+
+    <main class="app-main">
+
+        <div
+            id="appGrid"
+            class="app-grid"
+        >
+
+            <!-- =================================================
+                 FORMULÁRIO
+                 ================================================= -->
+
+            <section
+                class="card"
+                aria-labelledby="formTitle"
+            >
+
+                <h2
+                    id="formTitle"
+                    class="card__title"
+                >
+                    ⚙ Parâmetros de Entrada
+                </h2>
+
+
+                <form
+                    id="simulationForm"
+                    novalidate
+                >
+
+                    <fieldset class="form-section">
+
+                        <!-- =====================================
+                             GERAÇÃO PRÓPRIA
+                             ===================================== -->
+
+                        <div class="form-group">
+
+                            <span class="form-label">
+                                ⚡ Módulo de Geração Própria
+                            </span>
+
+                            <div class="switch-container">
+
+                                <span
+                                    class="
+                                        switch-status
+                                        switch-status--off
+                                    "
+                                >
+                                    OFF
+                                </span>
+
+                                <label
+                                    class="switch"
+                                    aria-label="Ativar geração própria"
+                                >
+
+                                    <input
+                                        id="toggleGD"
+                                        type="checkbox"
+                                    >
+
+                                    <span
+                                        class="switch__slider"
+                                    ></span>
+
+                                </label>
+
+                                <span
+                                    class="
+                                        switch-status
+                                        switch-status--on
+                                    "
+                                >
+                                    ON
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- =====================================
+                             EXECUTIVO
+                             ===================================== -->
+
+                        <div class="form-group">
+
+                            <label
+                                class="form-label"
+                                for="consultor"
+                            >
+                                👤 Identificação do Executivo
+                            </label>
+
+                            <select
+                                id="consultor"
+                                class="form-control navigation-field"
+                                required
+                            >
+
+                                <option value="">
+                                    Selecione o credenciado
+                                </option>
+
+                                <option
+                                    value="Wellington Lourenço Silva"
+                                >
+                                    Wellington Lourenço Silva - Gerente MS
+                                </option>
+
+                                <option
+                                    value="Ana Paula"
+                                    data-telefone="(67) 99880-1316"
+                                >
+                                    Ana Paula
+                                </option>
+
+				<option
+                                    value="Andre Vale"
+                                    data-telefone="(67) 99983-0459"
+                                >
+                                    Andre Vale
+                                </option>
+
+                                <option
+                                    value="Bruno Iudesneider"
+                                    data-telefone="(67) 99668-6661"
+                                >
+                                    Bruno Iudesneider
+                                </option>
+
+                                <option
+                                    value="Evandro Terci"
+                                    data-telefone="(67) 99684-6377"
+                                >
+                                    Evandro Terci
+                                </option>
+					
+				<option
+                                    value="Frankquilen dos Santos"
+                                    data-telefone="(87) 98127-4303"
+                                >
+                                    Frankquilen
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- =====================================
+                             CLASSE DE TENSÃO
+                             ===================================== -->
+
+                        <div class="form-group">
+
+                            <label
+                                class="form-label"
+                                for="rede"
+                            >
+                                🔌 Classe de Tensão
+                            </label>
+
+                            <select
+                                id="rede"
+                                class="form-control navigation-field"
+                            >
+
+                                <option value="M">
+                                    Monofásico | 30 kWh (Mínimo)
+                                </option>
+
+                                <option value="B">
+                                    Bifásico | 50 kWh (Mínimo)
+                                </option>
+
+                                <option value="T">
+                                    Trifásico | 100 kWh (Mínimo)
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- =====================================
+                             CONSUMO
+                             ===================================== -->
+
+                        <div class="form-group">
+
+                            <label
+                                class="form-label"
+                                for="consumo"
+                            >
+                                ⚡ Consumo Mensal (kWh)
+                            </label>
+
+                            <input
+                                id="consumo"
+                                class="form-control navigation-field"
+                                type="number"
+                                inputmode="numeric"
+                                min="0"
+                                step="1"
+                                placeholder="Ex: 350"
+                                autocomplete="off"
+                                required
+                            >
+
+                        </div>
+
+
+                        <!-- =====================================
+                             CAMPOS DA GD PRÓPRIA
+                             ===================================== -->
+
+                        <div
+                            id="gdFields"
+                            hidden
+                        >
+
+                            <div class="form-group">
+
+                                <label
+                                    class="form-label"
+                                    for="energiaGD"
+                                >
+                                    🔋 Volume de Injeção GD (kWh)
+                                </label>
+
+                                <input
+                                    id="energiaGD"
+                                    class="form-control navigation-field"
+                                    type="number"
+                                    inputmode="numeric"
+                                    min="0"
+                                    step="1"
+                                    placeholder="Ex: 100"
+                                    autocomplete="off"
+                                >
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label
+                                    class="form-label"
+                                    for="tarifaCompensacao"
+                                >
+                                    💰 Preço Base Injeção (TE/TUSD)
+                                </label>
+
+                                <input
+                                    id="tarifaCompensacao"
+                                    class="
+                                        form-control
+                                        navigation-field
+                                        decimal-6
+                                    "
+                                    type="text"
+                                    inputmode="decimal"
+                                    placeholder="0,986600"
+                                    autocomplete="off"
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- =====================================
+                             TARIFA
+                             ===================================== -->
+
+                        <div class="form-group">
+
+                            <label
+                                class="form-label"
+                                for="tarifaBase"
+                            >
+                                💰 Tarifa Básica c/ Impostos (R$)
+                            </label>
+
+                            <input
+                                id="tarifaBase"
+                                class="
+                                    form-control
+                                    navigation-field
+                                    decimal-6
+                                "
+                                type="text"
+                                inputmode="decimal"
+                                placeholder="0,000000"
+                                autocomplete="off"
+                                required
+                            >
+
+                        </div>
+
+
+                        <!-- =====================================
+                             BANDEIRAS
+                             ===================================== -->
+
+                        <div class="form-group">
+
+                            <label
+                                class="form-label"
+                                for="bandeiras"
+                            >
+                                ⚠ Encargos de Bandeira (R$)
+                            </label>
+
+                            <input
+                                id="bandeiras"
+                                class="
+                                    form-control
+                                    navigation-field
+                                    money
+                                "
+                                type="text"
+                                inputmode="decimal"
+                                placeholder="0,00"
+                                autocomplete="off"
+                            >
+
+                        </div>
+
+
+                        <!-- =====================================
+                             ILUMINAÇÃO
+                             ===================================== -->
+
+                        <div class="form-group">
+
+                            <label
+                                class="form-label"
+                                for="iluminacao"
+                            >
+                                💡 Taxa Iluminação Pública (R$)
+                            </label>
+
+                            <input
+                                id="iluminacao"
+                                class="
+                                    form-control
+                                    navigation-field
+                                    money
+                                "
+                                type="text"
+                                inputmode="decimal"
+                                placeholder="0,00"
+                                autocomplete="off"
+                            >
+
+                        </div>
+
+
+                        <!-- =====================================
+                             OUTROS
+                             ===================================== -->
+
+                        <div class="form-group">
+
+                            <label
+                                class="form-label"
+                                for="outros"
+                            >
+                                📋 Outros Débitos/Créditos (R$)
+                            </label>
+
+                            <input
+                                id="outros"
+                                class="
+                                    form-control
+                                    navigation-field
+                                    money-signed
+                                "
+                                type="text"
+                                inputmode="decimal"
+                                placeholder="-0,00 ou 0,00"
+                                autocomplete="off"
+                            >
+
+                        </div>
+
+
+                        <!-- =====================================
+                             PLANO
+                             ===================================== -->
+
+                        <div class="form-group">
+
+                            <label
+                                class="form-label"
+                                for="plano"
+                            >
+                                🏷 Plano | Fidelidade
+                            </label>
+
+                            <select
+                                id="plano"
+                                class="form-control navigation-field"
+                                required
+                            >
+
+                                <option
+                                    value=""
+                                    data-desconto="0"
+                                    data-aprovacao="false"
+                                >
+                                    Selecione o plano | Fidelidade
+                                </option>
+
+                                <option
+                                    value="P10"
+                                    data-desconto="10"
+                                    data-aprovacao="false"
+                                >
+                                    P 10% | ISENTA
+                                </option>
+
+                                <option
+                                    value="P16"
+                                    data-desconto="16"
+                                    data-aprovacao="false"
+                                >
+                                    P 16% | ISENTA
+                                </option>
+
+                                <option
+                                    value="P18"
+                                    data-desconto="18"
+                                    data-aprovacao="false"
+                                >
+                                    P 18% | 1 ANO
+                                </option>
+
+                                <option
+                                    value="M16"
+                                    data-desconto="16"
+                                    data-aprovacao="false"
+                                >
+                                    M 16% | ISENTA
+                                </option>
+
+                                <option
+                                    value="M22"
+                                    data-desconto="22"
+                                    data-aprovacao="false"
+                                >
+                                    M 22% | 1 ANO
+                                </option>
+
+                                <option
+                                    value="M26"
+                                    data-desconto="26"
+                                    data-aprovacao="false"
+                                >
+                                    M 26% | 2 ANOS
+                                </option>
+
+                                <option
+                                    value="G20"
+                                    data-desconto="20"
+                                    data-aprovacao="false"
+                                >
+                                    G 20% | ISENTA
+                                </option>
+
+                                <option
+                                    value="G25"
+                                    data-desconto="25"
+                                    data-aprovacao="false"
+                                >
+                                    G 25% | 1 ANO
+                                </option>
+
+                                <option
+                                    value="G30"
+                                    data-desconto="30"
+                                    data-aprovacao="false"
+                                >
+                                    G 30% | 2 ANOS
+                                </option>
+
+                                <option
+                                    value="G35"
+                                    data-desconto="35"
+                                    data-aprovacao="true"
+                                >
+                                    G 35% | 2 ANOS
+                                </option>
+
+                            </select>
+
+
+                            <!-- Aviso especial do plano de 35% -->
+                            <div
+                                id="approvalAlert"
+                                class="alert alert--warning"
+                                role="status"
+                                aria-live="polite"
+                                hidden
+                            >
+                                ⚠ Este desconto necessita aprovação da Diretoria
+                            </div>
+
+                        </div>
+
+
+                        <!-- =====================================
+                             VALIDAÇÃO
+                             ===================================== -->
+
+                        <div
+                            id="validationAlert"
+                            class="alert alert--error"
+                            role="alert"
+                            aria-live="assertive"
+                            hidden
+                        ></div>
+
+
+                        <!-- =====================================
+                             BOTÃO
+                             ===================================== -->
+
+                        <button
+                            class="button button--primary"
+                            type="submit"
+                        >
+                            Simular Economia
+                        </button>
+
+                    </fieldset>
+
+                </form>
+
+            </section>
+
+
+            <!-- =================================================
+                 RESULTADOS
+                 ================================================= -->
+
+            <section
+                id="resultsSection"
+                class="results"
+                aria-label="Resultado da simulação"
+                aria-live="polite"
+                hidden
+            >
+
+                <!-- =============================================
+                     CENÁRIO ATUAL
+                     ============================================= -->
+
+                <article class="card result-card">
+
+                    <h2
+                        class="
+                            result-card__title
+                            result-card__title--orange
+                        "
+                    >
+                        🏢 Cenário Atual – Distribuidora
+                    </h2>
+
+
+                    <dl class="result-list">
+
+                        <div class="result-row">
+                            <dt>Consumo</dt>
+                            <dd id="currentConsumption">
+                                R$ 0,00
+                            </dd>
+                        </div>
+
+                        <div class="result-row">
+                            <dt>Energia GD Própria</dt>
+                            <dd id="currentGD">
+                                R$ 0,00
+                            </dd>
+                        </div>
+
+                        <div class="result-row">
+                            <dt>Bandeiras</dt>
+                            <dd id="currentFlags">
+                                R$ 0,00
+                            </dd>
+                        </div>
+
+                        <div class="result-row">
+                            <dt>Iluminação Pública</dt>
+                            <dd id="currentLighting">
+                                R$ 0,00
+                            </dd>
+                        </div>
+
+                        <div class="result-row">
+                            <dt>Outros</dt>
+                            <dd id="currentOthers">
+                                R$ 0,00
+                            </dd>
+                        </div>
+
+                    </dl>
+
+
+                    <div
+                        class="
+                            result-total
+                            result-total--orange
+                        "
+                    >
+                        <span>
+                            💰 Total Fatura
+                        </span>
+
+                        <output id="currentTotal">
+                            R$ 0,00
+                        </output>
+                    </div>
+
+                </article>
+
+
+                <!-- =============================================
+                     CENÁRIO COM ECONOMIA
+                     ============================================= -->
+
+                <article class="card result-card">
+
+                    <h2
+                        class="
+                            result-card__title
+                            result-card__title--purple
+                        "
+                    >
+                        🌱 Cenário com Economia
+                    </h2>
+
+
+                    <dl class="result-list">
+
+                        <div class="result-row">
+
+                            <dt>
+                                Total Fatura Distribuidora
+                            </dt>
+
+                            <dd id="planDistributor">
+                                R$ 0,00
+                            </dd>
+
+                        </div>
+
+
+                        <div class="result-row">
+
+                            <dt>
+                                Créditos Injetados
+                            </dt>
+
+                            <dd id="planCredits">
+                                R$ 0,00
+                            </dd>
+
+                        </div>
+
+
+                        <div class="result-row">
+
+                            <dt>
+                                Desconto do Plano
+                            </dt>
+
+                            <dd id="planDiscount">
+                                R$ 0,00
+                            </dd>
+
+                        </div>
+
+
+                        <div class="result-row">
+
+                            <dt>
+                                Compensação de Impostos
+                            </dt>
+
+                            <dd id="planTaxes">
+                                R$ 0,00
+                            </dd>
+
+                        </div>
+
+
+                        <div class="result-row">
+
+                            <dt>
+                                Total Fatura do Plano
+                            </dt>
+
+                            <dd id="planInvoice">
+                                R$ 0,00
+                            </dd>
+
+                        </div>
+
+                    </dl>
+
+
+                    <div
+                        class="
+                            result-total
+                            result-total--purple
+                        "
+                    >
+
+                        <span>
+                            📊 Total Mensal
+                        </span>
+
+                        <output id="planTotal">
+                            R$ 0,00
+                        </output>
+
+                    </div>
+
+                </article>
+
+
+                <!-- =============================================
+                     AVISO DE APROVAÇÃO NOS RESULTADOS
+                     ============================================= -->
+
+                <div
+                    id="resultApprovalAlert"
+                    class="alert alert--warning"
+                    hidden
+                >
+                    ⚠ Este desconto necessita aprovação da Diretoria
+                </div>
+
+
+                <!-- =============================================
+                     ECONOMIA
+                     ============================================= -->
+
+                <article class="card savings-card">
+
+                    <div class="savings-month">
+
+                        💰 ECONOMIA MENSAL
+
+                        <br>
+
+                        <output id="monthlySavings">
+                            R$ 0,00
+                        </output>
+
+                    </div>
+
+
+                    <div class="savings-year">
+
+                        🎯 ECONOMIA ANUAL
+
+                        <br>
+
+                        <output id="annualSavings">
+                            R$ 0,00
+                        </output>
+
+                    </div>
+
+                </article>
+
+
+                <!-- =============================================
+                     EXECUTIVO
+                     ============================================= -->
+
+                <article class="card executive-card">
+
+                    <p
+                        id="executiveName"
+                        class="executive-name"
+                    >
+                        👤 Executivo
+                    </p>
+
+                    <p
+                        id="executivePhone"
+                        class="executive-phone"
+                    >
+                        📞 Telefone não disponível
+                    </p>
+
+                </article>
+
+
+                <!-- =============================================
+                     ASSINATURA
+                     ============================================= -->
+
+                <p
+                    id="simulationSignature"
+                    class="simulation-signature"
+                ></p>
+
+
+                <!-- =============================================
+                     PDF
+                     ============================================= -->
+
+                <button
+                    id="pdfButton"
+                    class="button button--pdf"
+                    type="button"
+                >
+                    Baixar Relatório em PDF
+                </button>
+
+            </section>
+
+        </div>
+
+    </main>
+
+
+    <!-- =========================================================
+         RODAPÉ
+         ========================================================= -->
+
+    <footer class="app-footer">
+
+        <p>
+            Design by André Leonardo Vale | 2026
+        </p>
+
+    </footer>
+
+
+    <!-- =========================================================
+         CONTEÚDO TEMPORÁRIO DO PDF
+
+         O JavaScript cria o conteúdo somente quando necessário.
+         ========================================================= -->
+
+    <div
+        id="pdfContent"
+        aria-hidden="true"
+    ></div>
+
+
+    <script>
+        "use strict";
+
+
+        /* =========================================================
+           SIMULADOR DE ECONOMIA
+           ---------------------------------------------------------
+           Organização:
+
+           1. Configurações comerciais
+           2. Cache do DOM
+           3. Formatação e conversão
+           4. Máscaras
+           5. Interface
+           6. Validação
+           7. Leitura dos dados
+           8. Motor de cálculo
+           9. Renderização
+           10. PDF
+           11. Eventos
+
+           O objetivo é manter as regras matemáticas separadas
+           da interface gráfica.
+           ========================================================= */
+
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            () => {
+
+
+                /* =================================================
+                   1. CONFIGURAÇÕES COMERCIAIS
+
+                   Regras importantes ficam centralizadas aqui.
+                   ================================================= */
+
+                const CONFIG = Object.freeze({
+
+                    tarifaCompensacaoPadrao:
+                        0.986600,
+
+                    descontoDiretoria:
+                        35,
+
+                    mesesAno:
+                        12,
+
+                    disponibilidade: Object.freeze({
+                        M: 30,
+                        B: 50,
+                        T: 100
+                    })
+                });
+
+
+                /* =================================================
+                   2. CACHE DOS ELEMENTOS DO DOM
+
+                   Os elementos são procurados apenas uma vez.
+                   ================================================= */
+
+                const elements = {
+
+                    appGrid:
+                        document.getElementById(
+                            "appGrid"
+                        ),
+
+                    form:
+                        document.getElementById(
+                            "simulationForm"
+                        ),
+
+                    toggleGD:
+                        document.getElementById(
+                            "toggleGD"
+                        ),
+
+                    gdFields:
+                        document.getElementById(
+                            "gdFields"
+                        ),
+
+                    consultor:
+                        document.getElementById(
+                            "consultor"
+                        ),
+
+                    rede:
+                        document.getElementById(
+                            "rede"
+                        ),
+
+                    consumo:
+                        document.getElementById(
+                            "consumo"
+                        ),
+
+                    energiaGD:
+                        document.getElementById(
+                            "energiaGD"
+                        ),
+
+                    tarifaCompensacao:
+                        document.getElementById(
+                            "tarifaCompensacao"
+                        ),
+
+                    tarifaBase:
+                        document.getElementById(
+                            "tarifaBase"
+                        ),
+
+                    bandeiras:
+                        document.getElementById(
+                            "bandeiras"
+                        ),
+
+                    iluminacao:
+                        document.getElementById(
+                            "iluminacao"
+                        ),
+
+                    outros:
+                        document.getElementById(
+                            "outros"
+                        ),
+
+                    plano:
+                        document.getElementById(
+                            "plano"
+                        ),
+
+                    approvalAlert:
+                        document.getElementById(
+                            "approvalAlert"
+                        ),
+
+                    validationAlert:
+                        document.getElementById(
+                            "validationAlert"
+                        ),
+
+                    resultsSection:
+                        document.getElementById(
+                            "resultsSection"
+                        ),
+
+                    resultApprovalAlert:
+                        document.getElementById(
+                            "resultApprovalAlert"
+                        ),
+
+
+                    /* Resultados atuais */
+
+                    currentConsumption:
+                        document.getElementById(
+                            "currentConsumption"
+                        ),
+
+                    currentGD:
+                        document.getElementById(
+                            "currentGD"
+                        ),
+
+                    currentFlags:
+                        document.getElementById(
+                            "currentFlags"
+                        ),
+
+                    currentLighting:
+                        document.getElementById(
+                            "currentLighting"
+                        ),
+
+                    currentOthers:
+                        document.getElementById(
+                            "currentOthers"
+                        ),
+
+                    currentTotal:
+                        document.getElementById(
+                            "currentTotal"
+                        ),
+
+
+                    /* Resultados do plano */
+
+                    planDistributor:
+                        document.getElementById(
+                            "planDistributor"
+                        ),
+
+                    planCredits:
+                        document.getElementById(
+                            "planCredits"
+                        ),
+
+                    planDiscount:
+                        document.getElementById(
+                            "planDiscount"
+                        ),
+
+                    planTaxes:
+                        document.getElementById(
+                            "planTaxes"
+                        ),
+
+                    planInvoice:
+                        document.getElementById(
+                            "planInvoice"
+                        ),
+
+                    planTotal:
+                        document.getElementById(
+                            "planTotal"
+                        ),
+
+
+                    /* Economia */
+
+                    monthlySavings:
+                        document.getElementById(
+                            "monthlySavings"
+                        ),
+
+                    annualSavings:
+                        document.getElementById(
+                            "annualSavings"
+                        ),
+
+
+                    /* Executivo */
+
+                    executiveName:
+                        document.getElementById(
+                            "executiveName"
+                        ),
+
+                    executivePhone:
+                        document.getElementById(
+                            "executivePhone"
+                        ),
+
+                    simulationSignature:
+                        document.getElementById(
+                            "simulationSignature"
+                        ),
+
+
+                    /* PDF */
+
+                    pdfButton:
+                        document.getElementById(
+                            "pdfButton"
+                        ),
+
+                    pdfContent:
+                        document.getElementById(
+                            "pdfContent"
+                        )
+                };
+
+
+                /* =================================================
+                   3. FORMATADORES
+                   ================================================= */
+
+                const currencyFormatter =
+                    new Intl.NumberFormat(
+                        "pt-BR",
+                        {
+                            style: "currency",
+                            currency: "BRL",
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        }
+                    );
+
+
+                /**
+                 * Formata um número em Real brasileiro.
+                 *
+                 * @param {number} value
+                 * @returns {string}
+                 */
+                function formatCurrency(value) {
+
+                    const safeValue =
+                        Number.isFinite(value)
+                            ? value
+                            : 0;
+
+                    return currencyFormatter
+                        .format(safeValue);
+                }
+
+
+                /**
+                 * Converte um valor digitado no padrão brasileiro
+                 * para Number.
+                 *
+                 * Exemplos:
+                 * 1.234,56 -> 1234.56
+                 * 0,986600 -> 0.9866
+                 *
+                 * @param {string|number} value
+                 * @returns {number}
+                 */
+                function parseBrazilianNumber(value) {
+
+                    if (
+                        value === null ||
+                        value === undefined ||
+                        String(value).trim() === ""
+                    ) {
+                        return 0;
+                    }
+
+
+                    const text =
+                        String(value).trim();
+
+
+                    const negative =
+                        text.startsWith("-");
+
+
+                    const normalized =
+                        text
+                            .replace(/^-/, "")
+                            .replace(/\./g, "")
+                            .replace(",", ".");
+
+
+                    const number =
+                        Number.parseFloat(
+                            normalized
+                        );
+
+
+                    if (
+                        !Number.isFinite(number)
+                    ) {
+                        return 0;
+                    }
+
+
+                    return negative
+                        ? -Math.abs(number)
+                        : Math.abs(number);
+                }
+
+
+                /**
+                 * Data atual em formato brasileiro.
+                 *
+                 * @returns {string}
+                 */
+                function getCurrentDate() {
+
+                    return new Date()
+                        .toLocaleDateString(
+                            "pt-BR"
+                        );
+                }
+
+
+                /* =================================================
+                   4. MÁSCARAS
+                   ================================================= */
+
+                /**
+                 * Aplica máscara numérica com quantidade fixa
+                 * de casas decimais.
+                 *
+                 * @param {HTMLInputElement} input
+                 * @param {number} decimals
+                 */
+                function applyDecimalMask(
+                    input,
+                    decimals
+                ) {
+
+                    const digits =
+                        input.value
+                            .replace(/\D/g, "");
+
+
+                    if (!digits) {
+
+                        input.value = "";
+
+                        return;
+                    }
+
+
+                    const number =
+                        Number.parseInt(
+                            digits,
+                            10
+                        ) /
+                        Math.pow(
+                            10,
+                            decimals
+                        );
+
+
+                    input.value =
+                        number.toLocaleString(
+                            "pt-BR",
+                            {
+                                minimumFractionDigits:
+                                    decimals,
+
+                                maximumFractionDigits:
+                                    decimals
+                            }
+                        );
+                }
+
+
+                /**
+                 * Máscara que aceita valores positivos e negativos.
+                 *
+                 * @param {HTMLInputElement} input
+                 */
+                function applySignedMoneyMask(input) {
+
+                    const negative =
+                        input.value
+                            .trim()
+                            .startsWith("-");
+
+
+                    const digits =
+                        input.value
+                            .replace(/\D/g, "");
+
+
+                    if (!digits) {
+
+                        input.value =
+                            negative
+                                ? "-"
+                                : "";
+
+                        return;
+                    }
+
+
+                    const number =
+                        Number.parseInt(
+                            digits,
+                            10
+                        ) / 100;
+
+
+                    const formatted =
+                        number.toLocaleString(
+                            "pt-BR",
+                            {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            }
+                        );
+
+
+                    input.value =
+                        negative
+                            ? `-${formatted}`
+                            : formatted;
+                }
+
+
+                /* Campos monetários */
+                document
+                    .querySelectorAll(
+                        ".money"
+                    )
+                    .forEach(
+                        (input) => {
+
+                            input.addEventListener(
+                                "input",
+                                () => {
+
+                                    applyDecimalMask(
+                                        input,
+                                        2
+                                    );
+                                }
+                            );
+                        }
+                    );
+
+
+                /* Tarifas com 6 casas */
+                document
+                    .querySelectorAll(
+                        ".decimal-6"
+                    )
+                    .forEach(
+                        (input) => {
+
+                            input.addEventListener(
+                                "input",
+                                () => {
+
+                                    applyDecimalMask(
+                                        input,
+                                        6
+                                    );
+                                }
+                            );
+                        }
+                    );
+
+
+                /* Débitos/créditos */
+                document
+                    .querySelectorAll(
+                        ".money-signed"
+                    )
+                    .forEach(
+                        (input) => {
+
+                            input.addEventListener(
+                                "input",
+                                () => {
+
+                                    applySignedMoneyMask(
+                                        input
+                                    );
+                                }
+                            );
+                        }
+                    );
+
+
+                /* =================================================
+                   5. CONTROLE DA INTERFACE
+                   ================================================= */
+
+                /**
+                 * Controla a exibição dos campos de GD própria.
+                 */
+                function updateGDInterface() {
+
+                    const active =
+                        elements.toggleGD.checked;
+
+
+                    elements.gdFields.hidden =
+                        !active;
+
+
+                    if (
+                        active &&
+                        !elements
+                            .tarifaCompensacao
+                            .value
+                    ) {
+
+                        elements
+                            .tarifaCompensacao
+                            .value =
+                            "0,986600";
+                    }
+
+
+                    if (!active) {
+
+                        elements
+                            .energiaGD
+                            .value = "";
+                    }
+                }
+
+
+                /**
+                 * Obtém a opção atualmente selecionada do plano.
+                 *
+                 * @returns {HTMLOptionElement}
+                 */
+                function getSelectedPlanOption() {
+
+                    return elements
+                        .plano
+                        .options[
+                            elements
+                                .plano
+                                .selectedIndex
+                        ];
+                }
+
+
+                /**
+                 * Retorna os dados comerciais do plano selecionado.
+                 */
+                function getPlanData() {
+
+                    const option =
+                        getSelectedPlanOption();
+
+
+                    return {
+
+                        codigo:
+                            option.value,
+
+                        desconto:
+                            Number(
+                                option.dataset
+                                    .desconto
+                            ) || 0,
+
+                        requerAprovacao:
+                            option.dataset
+                                .aprovacao ===
+                                "true",
+
+                        descricao:
+                            option.textContent
+                                .trim()
+                    };
+                }
+
+
+                /**
+                 * Exibe ou oculta o aviso especial do desconto.
+                 */
+                function updateApprovalAlert() {
+
+                    const plan =
+                        getPlanData();
+
+
+                    elements
+                        .approvalAlert
+                        .hidden =
+                        !plan
+                            .requerAprovacao;
+
+
+                    /*
+                     * Se os resultados já estiverem visíveis,
+                     * sincroniza também o aviso dos resultados.
+                     */
+                    if (
+                        !elements
+                            .resultsSection
+                            .hidden
+                    ) {
+
+                        elements
+                            .resultApprovalAlert
+                            .hidden =
+                            !plan
+                                .requerAprovacao;
+                    }
+                }
+
+
+                /**
+                 * Remove erros visuais anteriores.
+                 */
+                function clearValidation() {
+
+                    elements
+                        .validationAlert
+                        .hidden = true;
+
+
+                    elements
+                        .validationAlert
+                        .textContent = "";
+
+
+                    document
+                        .querySelectorAll(
+                            ".field-error"
+                        )
+                        .forEach(
+                            (field) => {
+
+                                field
+                                    .classList
+                                    .remove(
+                                        "field-error"
+                                    );
+                            }
+                        );
+                }
+
+
+                /**
+                 * Exibe uma mensagem de erro.
+                 *
+                 * @param {string} message
+                 * @param {HTMLElement|null} field
+                 */
+                function showValidationError(
+                    message,
+                    field = null
+                ) {
+
+                    elements
+                        .validationAlert
+                        .textContent =
+                        `⚠ ${message}`;
+
+
+                    elements
+                        .validationAlert
+                        .hidden = false;
+
+
+                    if (field) {
+
+                        field
+                            .classList
+                            .add(
+                                "field-error"
+                            );
+
+
+                        field.focus();
+                    }
+                }
+
+
+                /* =================================================
+                   6. VALIDAÇÃO
+                   ================================================= */
+
+                /**
+                 * Valida os dados necessários para a simulação.
+                 *
+                 * @returns {boolean}
+                 */
+                function validateForm() {
+
+                    clearValidation();
+
+
+                    if (
+                        !elements
+                            .consultor
+                            .value
+                    ) {
+
+                        showValidationError(
+                            "Selecione o executivo responsável pela simulação.",
+                            elements.consultor
+                        );
+
+                        return false;
+                    }
+
+
+                    const consumption =
+                        Number(
+                            elements
+                                .consumo
+                                .value
+                        );
+
+
+                    if (
+                        !Number.isFinite(
+                            consumption
+                        ) ||
+                        consumption <= 0
+                    ) {
+
+                        showValidationError(
+                            "Informe um consumo mensal válido.",
+                            elements.consumo
+                        );
+
+                        return false;
+                    }
+
+
+                    const tariff =
+                        parseBrazilianNumber(
+                            elements
+                                .tarifaBase
+                                .value
+                        );
+
+
+                    if (
+                        tariff <= 0
+                    ) {
+
+                        showValidationError(
+                            "Informe uma tarifa básica válida.",
+                            elements.tarifaBase
+                        );
+
+                        return false;
+                    }
+
+
+                    if (
+                        !elements
+                            .plano
+                            .value
+                    ) {
+
+                        showValidationError(
+                            "Selecione o plano e a fidelidade.",
+                            elements.plano
+                        );
+
+                        return false;
+                    }
+
+
+                    if (
+                        elements
+                            .toggleGD
+                            .checked
+                    ) {
+
+                        const gd =
+                            Number(
+                                elements
+                                    .energiaGD
+                                    .value
+                            ) || 0;
+
+
+                        if (
+                            gd < 0
+                        ) {
+
+                            showValidationError(
+                                "Informe um volume de injeção GD válido.",
+                                elements.energiaGD
+                            );
+
+                            return false;
+                        }
+
+
+                        if (
+                            gd >
+                            consumption
+                        ) {
+
+                            showValidationError(
+                                "O volume de injeção GD não pode ser maior que o consumo mensal.",
+                                elements.energiaGD
+                            );
+
+                            return false;
+                        }
+                    }
+
+
+                    return true;
+                }
+
+
+                /* =================================================
+                   7. LEITURA DOS DADOS
+                   ================================================= */
+
+                /**
+                 * Retorna a disponibilidade mínima conforme
+                 * a classe de tensão.
+                 *
+                 * @param {string} network
+                 * @returns {number}
+                 */
+                function getAvailability(network) {
+
+                    return (
+                        CONFIG
+                            .disponibilidade[
+                                network
+                            ] ??
+                        0
+                    );
+                }
+
+
+                /**
+                 * Obtém informações do executivo selecionado.
+                 */
+                function getExecutiveData() {
+
+                    const option =
+                        elements
+                            .consultor
+                            .options[
+                                elements
+                                    .consultor
+                                    .selectedIndex
+                            ];
+
+
+                    return {
+
+                        nome:
+                            option.value ||
+                            option.textContent
+                                .trim(),
+
+                        telefone:
+                            option.dataset
+                                .telefone ||
+                            ""
+                    };
+                }
+
+
+                /**
+                 * Lê os campos da interface e cria um objeto
+                 * simples para o motor de cálculo.
+                 */
+                function readSimulationData() {
+
+                    const hasGD =
+                        elements
+                            .toggleGD
+                            .checked;
+
+
+                    const plan =
+                        getPlanData();
+
+
+                    const network =
+                        elements
+                            .rede
+                            .value;
+
+
+                    const compensationTariff =
+                        hasGD
+
+                            ? (
+                                parseBrazilianNumber(
+                                    elements
+                                        .tarifaCompensacao
+                                        .value
+                                ) ||
+                                CONFIG
+                                    .tarifaCompensacaoPadrao
+                            )
+
+                            : CONFIG
+                                .tarifaCompensacaoPadrao;
+
+
+                    return {
+
+                        executivo:
+                            getExecutiveData(),
+
+                        plano:
+                            plan,
+
+                        possuiGD:
+                            hasGD,
+
+                        rede:
+                            network,
+
+                        disponibilidade:
+                            getAvailability(
+                                network
+                            ),
+
+                        consumo:
+                            Math.abs(
+                                Number(
+                                    elements
+                                        .consumo
+                                        .value
+                                )
+                            ) || 0,
+
+                        energiaGD:
+                            hasGD
+
+                                ? Math.abs(
+                                    Number(
+                                        elements
+                                            .energiaGD
+                                            .value
+                                    )
+                                ) || 0
+
+                                : 0,
+
+                        tarifaBase:
+                            parseBrazilianNumber(
+                                elements
+                                    .tarifaBase
+                                    .value
+                            ),
+
+                        tarifaCompensacao:
+                            compensationTariff,
+
+                        bandeiras:
+                            parseBrazilianNumber(
+                                elements
+                                    .bandeiras
+                                    .value
+                            ),
+
+                        iluminacao:
+                            parseBrazilianNumber(
+                                elements
+                                    .iluminacao
+                                    .value
+                            ),
+
+                        outros:
+                            parseBrazilianNumber(
+                                elements
+                                    .outros
+                                    .value
+                            ),
+
+                        desconto:
+                            plan.desconto
+                    };
+                }
+
+
+                /* =================================================
+                   8. MOTOR DE CÁLCULO
+
+                   IMPORTANTE:
+                   Esta função não acessa o HTML.
+                   Ela recebe dados e retorna resultados.
+                   ================================================= */
+
+                /**
+                 * Executa todas as regras matemáticas.
+                 *
+                 * @param {Object} data
+                 * @returns {Object}
+                 */
+                function calculateSimulation(
+                    data
+                ) {
+
+                    /*
+                     * Valor do consumo no cenário atual.
+                     */
+                    const consumptionValue =
+                        data.consumo *
+                        data.tarifaBase;
+
+
+                    /*
+                     * Valor da energia gerada pelo próprio cliente.
+                     * O sinal negativo representa abatimento.
+                     */
+                    const ownGenerationValue =
+                        data.energiaGD *
+                        data.tarifaCompensacao *
+                        -1;
+
+
+                    /*
+                     * Total da fatura atual da distribuidora.
+                     */
+                    const currentDistributorTotal =
+                        consumptionValue +
+                        ownGenerationValue +
+                        data.bandeiras +
+                        data.iluminacao +
+                        data.outros;
+
+
+                    /*
+                     * Quantidade de energia elegível para
+                     * compensação após disponibilidade mínima
+                     * e geração própria.
+                     */
+                    const compensatedConsumption =
+                        Math.max(
+                            0,
+
+                            data.consumo -
+                            data.energiaGD -
+                            data.disponibilidade
+                        );
+
+
+                    /*
+                     * Incorpora os encargos de bandeira
+                     * proporcionalmente à tarifa.
+                     */
+                    const tariffWithFlags =
+                        data.tarifaBase +
+                        (
+                            data.consumo > 0
+
+                                ? data.bandeiras /
+                                  data.consumo
+
+                                : 0
+                        );
+
+
+                    /*
+                     * Valor bruto dos créditos.
+                     */
+                    const grossCredits =
+                        compensatedConsumption *
+                        tariffWithFlags;
+
+
+                    /*
+                     * Desconto comercial.
+                     */
+                    const discountValue =
+                        (
+                            grossCredits *
+                            data.desconto /
+                            100
+                        ) * -1;
+
+
+                    /*
+                     * Compensação tributária.
+                     */
+                    const taxCompensation =
+                        (
+                            data.tarifaBase -
+                            data.tarifaCompensacao
+                        ) *
+                        compensatedConsumption *
+                        -1;
+
+
+                    /*
+                     * Parcela que permanece na distribuidora
+                     * no cenário com economia.
+                     *
+                     * Esta fórmula preserva a lógica da
+                     * versão anterior do simulador.
+                     */
+                    const planDistributorInvoice =
+                        (
+                            consumptionValue -
+                            data.energiaGD
+                        ) -
+                        (
+                            compensatedConsumption *
+                            data.tarifaCompensacao
+                        ) +
+                        data.bandeiras +
+                        data.iluminacao +
+                        data.outros;
+
+
+                    /*
+                     * Fatura referente ao plano.
+                     */
+                    const planInvoice =
+                        grossCredits +
+                        discountValue +
+                        taxCompensation;
+
+
+                    /*
+                     * Total mensal após aplicação do cenário.
+                     */
+                    const planMonthlyTotal =
+                        planDistributorInvoice +
+                        planInvoice;
+
+
+                    /*
+                     * Economia.
+                     */
+                    const monthlySavings =
+                        currentDistributorTotal -
+                        planMonthlyTotal;
+
+
+                    const annualSavings =
+                        monthlySavings *
+                        CONFIG.mesesAno;
+
+
+                    return {
+
+                        consumptionValue,
+                        ownGenerationValue,
+                        currentDistributorTotal,
+
+                        compensatedConsumption,
+                        tariffWithFlags,
+
+                        grossCredits,
+                        discountValue,
+                        taxCompensation,
+
+                        planDistributorInvoice,
+                        planInvoice,
+                        planMonthlyTotal,
+
+                        monthlySavings,
+                        annualSavings
+                    };
+                }
+
+
+                /* =================================================
+                   9. RENDERIZAÇÃO DOS RESULTADOS
+                   ================================================= */
+
+                /**
+                 * Atualiza todos os elementos de resultado.
+                 *
+                 * @param {Object} data
+                 * @param {Object} result
+                 */
+                function renderResults(
+                    data,
+                    result
+                ) {
+
+                    /* Cenário atual */
+                    elements
+                        .currentConsumption
+                        .textContent =
+                        formatCurrency(
+                            result
+                                .consumptionValue
+                        );
+
+
+                    elements
+                        .currentGD
+                        .textContent =
+                        formatCurrency(
+                            result
+                                .ownGenerationValue
+                        );
+
+
+                    elements
+                        .currentFlags
+                        .textContent =
+                        formatCurrency(
+                            data.bandeiras
+                        );
+
+
+                    elements
+                        .currentLighting
+                        .textContent =
+                        formatCurrency(
+                            data.iluminacao
+                        );
+
+
+                    elements
+                        .currentOthers
+                        .textContent =
+                        formatCurrency(
+                            data.outros
+                        );
+
+
+                    elements
+                        .currentTotal
+                        .textContent =
+                        formatCurrency(
+                            result
+                                .currentDistributorTotal
+                        );
+
+
+                    /* Cenário com economia */
+                    elements
+                        .planDistributor
+                        .textContent =
+                        formatCurrency(
+                            result
+                                .planDistributorInvoice
+                        );
+
+
+                    elements
+                        .planCredits
+                        .textContent =
+                        formatCurrency(
+                            result
+                                .grossCredits
+                        );
+
+
+                    elements
+                        .planDiscount
+                        .textContent =
+                        formatCurrency(
+                            result
+                                .discountValue
+                        );
+
+
+                    elements
+                        .planTaxes
+                        .textContent =
+                        formatCurrency(
+                            result
+                                .taxCompensation
+                        );
+
+
+                    elements
+                        .planInvoice
+                        .textContent =
+                        formatCurrency(
+                            result
+                                .planInvoice
+                        );
+
+
+                    elements
+                        .planTotal
+                        .textContent =
+                        formatCurrency(
+                            result
+                                .planMonthlyTotal
+                        );
+
+
+                    /* Economia */
+                    elements
+                        .monthlySavings
+                        .textContent =
+                        formatCurrency(
+                            result
+                                .monthlySavings
+                        );
+
+
+                    elements
+                        .annualSavings
+                        .textContent =
+                        formatCurrency(
+                            result
+                                .annualSavings
+                        );
+
+
+                    /* Executivo */
+                    elements
+                        .executiveName
+                        .textContent =
+                        `👤 ${data.executivo.nome}`;
+
+
+                    elements
+                        .executivePhone
+                        .textContent =
+                        data
+                            .executivo
+                            .telefone
+
+                            ? `📞 ${data.executivo.telefone}`
+
+                            : "📞 Telefone não disponível";
+
+
+                    /* Assinatura */
+                    elements
+                        .simulationSignature
+                        .innerHTML =
+                        `
+                            Simulação feita pelo(a) executivo(a)
+                            <strong>${escapeHTML(data.executivo.nome)}</strong>
+                            em
+                            <strong>${getCurrentDate()}</strong>
+                        `;
+
+
+                    /* Aprovação da Diretoria */
+                    elements
+                        .resultApprovalAlert
+                        .hidden =
+                        !data
+                            .plano
+                            .requerAprovacao;
+
+
+                    /* Exibe a área de resultados */
+                    elements
+                        .resultsSection
+                        .hidden = false;
+
+
+                    elements
+                        .appGrid
+                        .classList
+                        .add(
+                            "has-results"
+                        );
+                }
+
+
+                /**
+                 * Escapa caracteres HTML para evitar que valores
+                 * dinâmicos sejam interpretados como marcação.
+                 *
+                 * @param {string} value
+                 * @returns {string}
+                 */
+                function escapeHTML(value) {
+
+                    return String(value)
+                        .replace(
+                            /&/g,
+                            "&amp;"
+                        )
+                        .replace(
+                            /</g,
+                            "&lt;"
+                        )
+                        .replace(
+                            />/g,
+                            "&gt;"
+                        )
+                        .replace(
+                            /"/g,
+                            "&quot;"
+                        )
+                        .replace(
+                            /'/g,
+                            "&#039;"
+                        );
+                }
+
+
+                /* =================================================
+                   10. EXECUÇÃO DA SIMULAÇÃO
+                   ================================================= */
+
+                function runSimulation() {
+
+                    if (
+                        !validateForm()
+                    ) {
+                        return;
+                    }
+
+
+                    const data =
+                        readSimulationData();
+
+
+                    const result =
+                        calculateSimulation(
+                            data
+                        );
+
+
+                    renderResults(
+                        data,
+                        result
+                    );
+
+
+                    /*
+                     * Armazena apenas o último resultado necessário
+                     * para a geração do relatório.
+                     */
+                    lastSimulation = {
+                        data,
+                        result
+                    };
+
+
+                    setTimeout(
+                        () => {
+
+                            elements
+                                .resultsSection
+                                .scrollIntoView({
+                                    behavior:
+                                        "smooth",
+
+                                    block:
+                                        "start"
+                                });
+                        },
+                        100
+                    );
+                }
+
+
+                /* =================================================
+                   11. PDF
+                   ================================================= */
+
+                let lastSimulation =
+                    null;
+
+
+                /**
+                 * Cria o HTML exclusivo do relatório PDF.
+                 *
+                 * @param {Object} data
+                 * @param {Object} result
+                 * @returns {string}
+                 */
+                function createPDFTemplate(
+                    data,
+                    result
+                ) {
+
+                    const approval =
+                        data
+                            .plano
+                            .requerAprovacao
+
+                            ? `
+                                <div
+                                    style="
+                                        margin:12px 0;
+                                        padding:10px;
+                                        border:1px solid #ff9900;
+                                        border-radius:8px;
+                                        background:#fff7e6;
+                                        color:#c66f00;
+                                        font-size:12px;
+                                        font-weight:700;
+                                        text-align:center;
+                                    "
+                                >
+                                    Este desconto necessita aprovação da Diretoria
+                                </div>
+                              `
+
+                            : "";
+
+
+                    return `
+                        <div
+                            style="
+                                width:100%;
+                                padding:15px;
+                                background:#ffffff;
+                                color:#111111;
+                                font-family:Arial,sans-serif;
+                            "
+                        >
+
+                            <div
+                                style="
+                                    text-align:center;
+                                    margin-bottom:18px;
+                                "
+                            >
+
+                                <div
+                                    style="
+                                        font-size:22px;
+                                        font-weight:700;
+                                        color:#111111;
+                                    "
+                                >
+                                    SIMULADOR DE ECONOMIA
+                                </div>
+
+                                <div
+                                    style="
+                                        margin-top:4px;
+                                        font-size:14px;
+                                        font-weight:700;
+                                        color:#d97706;
+                                    "
+                                >
+                                    RELATÓRIO DE SIMULAÇÃO
+                                </div>
+
+                            </div>
+
+
+                            ${createPDFCard(
+                                "Cenário Atual – Distribuidora",
+                                "#d97706",
+                                [
+                                    [
+                                        "Consumo",
+                                        formatCurrency(
+                                            result.consumptionValue
+                                        )
+                                    ],
+                                    [
+                                        "Energia GD Própria",
+                                        formatCurrency(
+                                            result.ownGenerationValue
+                                        )
+                                    ],
+                                    [
+                                        "Bandeiras",
+                                        formatCurrency(
+                                            data.bandeiras
+                                        )
+                                    ],
+                                    [
+                                        "Iluminação Pública",
+                                        formatCurrency(
+                                            data.iluminacao
+                                        )
+                                    ],
+                                    [
+                                        "Outros",
+                                        formatCurrency(
+                                            data.outros
+                                        )
+                                    ]
+                                ],
+                                [
+                                    "Total Fatura",
+                                    formatCurrency(
+                                        result.currentDistributorTotal
+                                    )
+                                ]
+                            )}
+
+
+                            ${createPDFCard(
+                                "Cenário com Economia",
+                                "#6b21a8",
+                                [
+                                    [
+                                        "Total Fatura Distribuidora",
+                                        formatCurrency(
+                                            result.planDistributorInvoice
+                                        )
+                                    ],
+                                    [
+                                        "Créditos Injetados",
+                                        formatCurrency(
+                                            result.grossCredits
+                                        )
+                                    ],
+                                    [
+                                        `Desconto do Plano (${data.desconto}%)`,
+                                        formatCurrency(
+                                            result.discountValue
+                                        )
+                                    ],
+                                    [
+                                        "Compensação de Impostos",
+                                        formatCurrency(
+                                            result.taxCompensation
+                                        )
+                                    ],
+                                    [
+                                        "Total Fatura do Plano",
+                                        formatCurrency(
+                                            result.planInvoice
+                                        )
+                                    ]
+                                ],
+                                [
+                                    "Total Mensal",
+                                    formatCurrency(
+                                        result.planMonthlyTotal
+                                    )
+                                ]
+                            )}
+
+
+                            ${approval}
+
+
+                            <div
+                                style="
+                                    margin-top:14px;
+                                    padding:15px;
+                                    border:2px solid #15803d;
+                                    border-radius:10px;
+                                    text-align:center;
+                                    background:#f0fdf4;
+                                "
+                            >
+
+                                <div
+                                    style="
+                                        color:#15803d;
+                                        font-size:17px;
+                                        font-weight:700;
+                                    "
+                                >
+                                    ECONOMIA MENSAL
+                                    <br>
+                                    ${formatCurrency(result.monthlySavings)}
+                                </div>
+
+                                <div
+                                    style="
+                                        margin-top:10px;
+                                        color:#111111;
+                                        font-size:23px;
+                                        font-weight:700;
+                                    "
+                                >
+                                    ECONOMIA ANUAL
+                                    <br>
+                                    ${formatCurrency(result.annualSavings)}
+                                </div>
+
+                            </div>
+
+
+                            <div
+                                style="
+                                    margin-top:14px;
+                                    padding:12px;
+                                    border:1px solid #6b21a8;
+                                    border-radius:10px;
+                                    text-align:center;
+                                "
+                            >
+
+                                <div
+                                    style="
+                                        color:#6b21a8;
+                                        font-size:14px;
+                                        font-weight:700;
+                                    "
+                                >
+                                    ${escapeHTML(data.executivo.nome)}
+                                </div>
+
+                                <div
+                                    style="
+                                        margin-top:4px;
+                                        color:#555555;
+                                        font-size:12px;
+                                    "
+                                >
+                                    ${
+                                        data.executivo.telefone
+                                            ? escapeHTML(
+                                                data.executivo.telefone
+                                            )
+                                            : "Telefone não disponível"
+                                    }
+                                </div>
+
+                            </div>
+
+
+                            <div
+                                style="
+                                    margin-top:12px;
+                                    text-align:center;
+                                    color:#666666;
+                                    font-size:10px;
+                                "
+                            >
+                                Simulação realizada em
+                                ${getCurrentDate()}
+                            </div>
+
+
+                            <div
+                                style="
+                                    margin-top:8px;
+                                    text-align:center;
+                                    color:#ff9900;
+                                    font-size:10px;
+                                    font-weight:700;
+                                "
+                            >
+                                Design by André Leonardo Vale | 2026
+                            </div>
+
+                        </div>
+                    `;
+                }
+
+
+                /**
+                 * Cria um card reutilizável para o PDF.
+                 *
+                 * @param {string} title
+                 * @param {string} color
+                 * @param {Array<Array<string>>} rows
+                 * @param {Array<string>} total
+                 * @returns {string}
+                 */
+                function createPDFCard(
+                    title,
+                    color,
+                    rows,
+                    total
+                ) {
+
+                    const rowsHTML =
+                        rows
+                            .map(
+                                ([label, value]) => `
+                                    <div
+                                        style="
+                                            display:flex;
+                                            justify-content:space-between;
+                                            gap:10px;
+                                            padding:5px 0;
+                                            border-bottom:1px solid #eeeeee;
+                                            font-size:12px;
+                                        "
+                                    >
+                                        <span>${escapeHTML(label)}</span>
+                                        <strong>${escapeHTML(value)}</strong>
+                                    </div>
+                                `
+                            )
+                            .join("");
+
+
+                    return `
+                        <div
+                            style="
+                                margin-bottom:14px;
+                                padding:14px;
+                                border:1px solid #dddddd;
+                                border-radius:10px;
+                            "
+                        >
+
+                            <div
+                                style="
+                                    margin-bottom:8px;
+                                    color:${color};
+                                    font-size:14px;
+                                    font-weight:700;
+                                "
+                            >
+                                ${escapeHTML(title)}
+                            </div>
+
+                            ${rowsHTML}
+
+                            <div
+                                style="
+                                    display:flex;
+                                    justify-content:space-between;
+                                    gap:10px;
+                                    margin-top:8px;
+                                    padding-top:8px;
+                                    border-top:2px solid #dddddd;
+                                    color:${color};
+                                    font-size:14px;
+                                    font-weight:700;
+                                "
+                            >
+                                <span>${escapeHTML(total[0])}</span>
+                                <span>${escapeHTML(total[1])}</span>
+                            </div>
+
+                        </div>
+                    `;
+                }
+
+
+                /**
+                 * Gera e baixa o relatório PDF.
+                 */
+                async function generatePDF() {
+
+                    if (!lastSimulation) {
+
+                        showValidationError(
+                            "Execute uma simulação antes de gerar o PDF."
+                        );
+
+                        return;
+                    }
+
+
+                    if (
+                        typeof html2pdf ===
+                        "undefined"
+                    ) {
+
+                        showValidationError(
+                            "Não foi possível carregar o gerador de PDF. Verifique sua conexão com a internet."
+                        );
+
+                        return;
+                    }
+
+
+                    const {
+                        data,
+                        result
+                    } = lastSimulation;
+
+
+                    elements
+                        .pdfContent
+                        .innerHTML =
+                        createPDFTemplate(
+                            data,
+                            result
+                        );
+
+
+                    elements
+                        .pdfContent
+                        .style
+                        .display =
+                        "block";
+
+
+                    const originalText =
+                        elements
+                            .pdfButton
+                            .textContent;
+
+
+                    elements
+                        .pdfButton
+                        .disabled = true;
+
+
+                    elements
+                        .pdfButton
+                        .textContent =
+                        "Gerando PDF...";
+
+
+                    const date =
+                        new Date()
+                            .toLocaleDateString(
+                                "pt-BR"
+                            )
+                            .replace(
+                                /\//g,
+                                "-"
+                            );
+
+
+                    const options = {
+
+                        margin:
+                            [5, 5, 5, 5],
+
+                        filename:
+                            `Simulacao_Economia_${date}.pdf`,
+
+                        image: {
+                            type: "jpeg",
+                            quality: 0.96
+                        },
+
+                        html2canvas: {
+                            scale: 1.5,
+                            scrollY: 0,
+                            useCORS: true,
+                            backgroundColor:
+                                "#ffffff",
+                            logging: false
+                        },
+
+                        jsPDF: {
+                            unit: "mm",
+                            format: "a4",
+                            orientation:
+                                "portrait"
+                        }
+                    };
+
+
+                    try {
+
+                        await html2pdf()
+                            .set(options)
+                            .from(
+                                elements
+                                    .pdfContent
+                            )
+                            .save();
+
+                    } catch (error) {
+
+                        console.error(
+                            "Erro ao gerar PDF:",
+                            error
+                        );
+
+
+                        showValidationError(
+                            "Não foi possível gerar o PDF. Tente novamente."
+                        );
+
+                    } finally {
+
+                        elements
+                            .pdfContent
+                            .style
+                            .display =
+                            "none";
+
+
+                        elements
+                            .pdfButton
+                            .disabled =
+                            false;
+
+
+                        elements
+                            .pdfButton
+                            .textContent =
+                            originalText;
+                    }
+                }
+
+
+                /* =================================================
+                   12. NAVEGAÇÃO COM ENTER
+                   ================================================= */
+
+                function configureEnterNavigation() {
+
+                    document.addEventListener(
+                        "keydown",
+                        (event) => {
+
+                            if (
+                                event.key !==
+                                "Enter"
+                            ) {
+                                return;
+                            }
+
+
+                            /*
+                             * Não interfere no botão.
+                             */
+                            if (
+                                event.target
+                                    .tagName ===
+                                "BUTTON"
+                            ) {
+                                return;
+                            }
+
+
+                            const visibleFields =
+                                Array
+                                    .from(
+                                        document
+                                            .querySelectorAll(
+                                                ".navigation-field"
+                                            )
+                                    )
+                                    .filter(
+                                        (field) =>
+                                            field
+                                                .offsetParent !==
+                                            null
+                                    );
+
+
+                            const index =
+                                visibleFields
+                                    .indexOf(
+                                        document
+                                            .activeElement
+                                    );
+
+
+                            if (index === -1) {
+                                return;
+                            }
+
+
+                            event.preventDefault();
+
+
+                            const nextField =
+                                visibleFields[
+                                    index + 1
+                                ];
+
+
+                            if (nextField) {
+
+                                nextField.focus();
+
+                                if (
+                                    typeof
+                                    nextField.select ===
+                                    "function" &&
+                                    nextField.tagName ===
+                                    "INPUT"
+                                ) {
+                                    nextField.select();
+                                }
+
+                                return;
+                            }
+
+
+                            runSimulation();
+                        }
+                    );
+                }
+
+
+                /* =================================================
+                   13. EVENTOS
+                   ================================================= */
+
+                elements
+                    .toggleGD
+                    .addEventListener(
+                        "change",
+                        () => {
+
+                            updateGDInterface();
+                        }
+                    );
+
+
+                elements
+                    .plano
+                    .addEventListener(
+                        "change",
+                        () => {
+
+                            updateApprovalAlert();
+                        }
+                    );
+
+
+                elements
+                    .form
+                    .addEventListener(
+                        "submit",
+                        (event) => {
+
+                            event.preventDefault();
+
+                            runSimulation();
+                        }
+                    );
+
+
+                elements
+                    .pdfButton
+                    .addEventListener(
+                        "click",
+                        generatePDF
+                    );
+
+
+                /*
+                 * Ao alterar campos após uma simulação,
+                 * o relatório anterior continua visível,
+                 * mas o PDF só será atualizado após uma
+                 * nova execução da simulação.
+                 */
+                elements
+                    .form
+                    .addEventListener(
+                        "input",
+                        () => {
+
+                            clearValidation();
+                        }
+                    );
+
+
+                /*
+                 * Inicialização.
+                 */
+                updateGDInterface();
+                updateApprovalAlert();
+                configureEnterNavigation();
+
+            }
+        );
+    </script>
+
+</body>
+
+</html>
